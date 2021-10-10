@@ -7,7 +7,7 @@ const categoryRoute = require('./routes/categoryRoute');
 // const productRoute = require('./routes/productRoute');
 // const orderRoute = require('./routes/orderRoute');
 // const orderItemRoute = require('./routes/orderItemRoute');
-// const profileRoute = require('./routes/productRoute');
+const profileRoute = require('./routes/profileRoute');
 //=====================================================================================
 // ประกาศ ตัวแปร app เก็บ function express
 const app = express();
@@ -30,7 +30,7 @@ app.use('/category', categoryRoute);
 // // orderItem CRUD routes
 // app.use('/orderItem', orderItemRoute);
 // // update profile route
-// app.use('/profile', profileRoute);
+app.use('/profile', profileRoute);
 
 //=====================================================================================
 // path not found handing middleware

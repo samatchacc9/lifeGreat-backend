@@ -117,7 +117,20 @@ exports.login = async (req, res, next) => {
     const payload = {
       id: user.id,
       username: user.username,
+      firstname: user.firstname,
+      lastname: user.lastname,
+      dateofbirth: user.dateofbirth,
+      phone: user.phone,
+      gender: user.gender,
+      email: user.email,
       role: user.role,
+      province: user.province,
+      district: user.district,
+      subdistrict: user.subdistrict,
+      houseno: user.houseno,
+      village: user.village,
+      zipcode: user.zipcode,
+      picurl: user.picurl,
     };
     // const secretKey = 'SECRET_KEY';
     const token = jwt.sign(payload, process.env.JWT_SECRET_KEY, { expiresIn: 60 * 60 * 24 * 30 }); //'30d'
