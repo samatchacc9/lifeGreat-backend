@@ -25,7 +25,7 @@ module.exports = (sequelize, DataTypes) => {
       },
       picurl: {
         type: DataTypes.STRING,
-        allowNull: false,
+        allowNull: true,
       },
     },
 

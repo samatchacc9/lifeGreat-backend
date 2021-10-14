@@ -2,6 +2,7 @@
 const bcrypt = require('bcryptjs');
 const util = require('util');
 const cloudinary = require('cloudinary').v2;
+const fs = require('fs');
 const { User } = require('../models');
 const uploadPromise = util.promisify(cloudinary.uploader.upload);
 
@@ -12,7 +13,7 @@ exports.getProfileById = async (req, res, next) => {
     const user = await User.findOne({
       where: { id },
       attributes: {
-        exclude: ['createdAt', 'updatedAt'],
+        exclude: ['createdAt', 'updatedAt', 'password'],
       },
       order: [
         'firstname',
@@ -29,7 +30,7 @@ exports.getProfileById = async (req, res, next) => {
         'village',
         'zipcode',
         'username',
-        'password',
+        // 'password',
         'picurl',
       ],
     });
@@ -63,7 +64,14 @@ exports.updateProfile = async (req, res, next) => {
     } = req.body;
     //destructuring array index 0
     const hasedPassword = await bcrypt.hash(password, 12);
-    const result = await uploadPromise(req.file.path);
+
+    let result = undefined;
+
+    if (req.file) {
+      result = await uploadPromise(req.file.path);
+      fs.unlinkSync(req.file.path);
+    }
+
     const [rows] = await User.update(
       {
         firstname,
@@ -81,7 +89,7 @@ exports.updateProfile = async (req, res, next) => {
         zipcode,
         username,
         password: hasedPassword,
-        picurl: result.secure_url,
+        picurl: result === undefined ? undefined : result.secure_url,
       },
       {
         where: { id },

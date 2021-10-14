@@ -42,7 +42,7 @@ exports.authenticate = async (req, res, next) => {
     req.data = decoded;
     next();
   } catch (err) {
-    console.log(err.name);
+    // console.log(err.name);
     next(err);
   }
 };
@@ -72,7 +72,8 @@ exports.register = async (req, res, next) => {
     // function แปลงข้อมูล password
     const hasedPassword = await bcrypt.hash(password, 12);
     const result = await uploadPromise(req.file.path);
-    console.log(result);
+    fs.unlinkSync(req.file.path);
+    // console.log(result);
     //create data in database
     const user = await User.create({
       firstname,

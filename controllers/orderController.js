@@ -1,10 +1,44 @@
 // const jwt = require('jsonwebtoken');
+
 const { Order } = require('../models');
+const { OrderItem, Product, User } = require('../models');
+
+const fs = require('fs');
+const cloudinary = require('cloudinary').v2;
+const util = require('util');
+const uploadPromise = util.promisify(cloudinary.uploader.upload);
 
 //==================== getAllOrders
 exports.getAllOrders = async (req, res, next) => {
+  // console.log('test');
   try {
-    const orders = await Order.findAll({ where: { userId: req.user.id } });
+    const orders = await Order.findAll({
+      //User
+
+      required: true,
+      attributes: {
+        exclude: ['createdAt', 'updatedAt'],
+      },
+
+      //OrderItem
+      include: [
+        User,
+        {
+          model: OrderItem,
+          required: true,
+          attributes: {
+            exclude: ['createdAt', 'updatedAt'],
+          },
+
+          //Product
+          include: Product,
+          required: true,
+          attributes: {
+            exclude: ['createdAt', 'updatedAt'],
+          },
+        },
+      ],
+    });
     res.json({ orders });
   } catch (err) {
     next(err);
@@ -15,7 +49,7 @@ exports.getAllOrders = async (req, res, next) => {
 exports.getOrderById = async (req, res, next) => {
   try {
     const { id } = req.params;
-    const order = await Order.findAll({ where: { id, userId: req.user.id } });
+    const order = await Order.findOne({ where: { id } });
     res.json({ order });
   } catch (err) {
     next(err);
@@ -26,18 +60,36 @@ exports.getOrderById = async (req, res, next) => {
 exports.createOrder = async (req, res, next) => {
   try {
     // 1. รับ req ที่ส่งเข้ามาทาง  body
-    const order = req.user;
+    // const order = req.body;
     // destructuring obj data จาก req ในส่วน body
-    const { orderdate, paymentstatus, picurl, bankname, bankno } = req.body;
-    //ใช้คำสั่ง squelize สร้างสินค้าลงใน DB
+    //====================== ตัวรับ
+    const { orderdate, paymentstatus, picurl, bankname, bankno, cartitems } = req.body;
+
+    // console.log(JSON.parse(cartitems));
+
+    const result = await uploadPromise(req.file.path);
+    fs.unlinkSync(req.file.path);
+    //create order
     const order = await Order.create({
       orderdate,
       paymentstatus,
-      picurl,
+      picurl: result.secure_url,
       bankname,
       bankno,
-      userId: user.id,
+      userId: req.user.id,
     });
+
+    //order items map เปลี่ยนเป้น obj
+    const newOi = JSON.parse(cartitems).map((item) => ({
+      qty: item.qty,
+      productprice: item.productprice,
+      orderId: order.id,
+      productId: item.id,
+    }));
+    // console.log(newOi);
+
+    // bulkCreat เป็นฟังก์ชัน loop ก้อน
+    const orderItems = await OrderItem.bulkCreate(newOi);
     //respond list ออกไป
     res.status(201).json({ order });
   } catch (err) {
@@ -49,14 +101,13 @@ exports.createOrder = async (req, res, next) => {
 exports.updateOrder = async (req, res, next) => {
   try {
     const { id } = req.params;
-    const { orderdate, paymentstatus, picurl, bankname, bankno } = req.body;
+    const { bankname, bankno, paymentstatus, orderdate } = req.body;
     //destructuring array index 0
-    const [rows] = await Product.update(
-      { orderdate, paymentstatus, picurl, bankname, bankno, userId: user.id },
+    const [rows] = await Order.update(
+      { bankname, bankno, paymentstatus, orderdate },
       {
         where: {
           id,
-          userId: req.user.id,
         },
       },
     );
@@ -77,7 +128,6 @@ exports.deleteOrder = async (req, res, next) => {
     const rows = await Order.destroy({
       where: {
         id,
-        userId: req.user.id,
       },
     });
 

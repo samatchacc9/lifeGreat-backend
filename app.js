@@ -4,8 +4,8 @@ require('dotenv').config();
 const express = require('express');
 const cors = require('cors'); // มันคือ middleware
 const categoryRoute = require('./routes/categoryRoute');
-// const productRoute = require('./routes/productRoute');
-// const orderRoute = require('./routes/orderRoute');
+const productRoute = require('./routes/productRoute');
+const orderRoute = require('./routes/orderRoute');
 // const orderItemRoute = require('./routes/orderItemRoute');
 const profileRoute = require('./routes/profileRoute');
 //=====================================================================================
@@ -24,9 +24,9 @@ app.use('/', userAuthenRoute);
 // category CRUD routes
 app.use('/category', categoryRoute);
 // // product CRUD routes
-// app.use('/product', productRoute);
+app.use('/product', productRoute);
 // // order CRUD routes
-// app.use('/order', orderRoute);
+app.use('/order', orderRoute);
 // // orderItem CRUD routes
 // app.use('/orderItem', orderItemRoute);
 // // update profile route
