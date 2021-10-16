@@ -71,8 +71,19 @@ exports.register = async (req, res, next) => {
 
     // function แปลงข้อมูล password
     const hasedPassword = await bcrypt.hash(password, 12);
-    const result = await uploadPromise(req.file.path);
-    fs.unlinkSync(req.file.path);
+    let result;
+    if (req.file) {
+      result = await uploadPromise(req.file.path);
+      fs.unlinkSync(req.file.path);
+    }
+
+    // let result = undefined;
+
+    // if (req.file) {
+    //   result = await uploadPromise(req.file.path);
+    //   fs.unlinkSync(req.file.path);
+    // }
+
     // console.log(result);
     //create data in database
     const user = await User.create({
@@ -91,7 +102,7 @@ exports.register = async (req, res, next) => {
       zipcode,
       username,
       password: hasedPassword,
-      picurl: result.secure_url,
+      picurl: !result ? null : result.secure_url,
     });
     res.send({ user });
   } catch (err) {
@@ -137,6 +148,18 @@ exports.login = async (req, res, next) => {
     const token = jwt.sign(payload, process.env.JWT_SECRET_KEY, { expiresIn: 60 * 60 * 24 * 30 }); //'30d'
     // const token = jwt.sign(payload, process.env.JWT_SECRET_KEY, { expiresIn: 3600 }); //5s
     res.json({ message: 'login sccess logged in', token });
+  } catch (err) {
+    next(err);
+  }
+};
+
+exports.checkadmin = async (req, res, next) => {
+  try {
+    if (req.user === 'ADMIN') {
+      next();
+    } else {
+      res.status(400).send({ message: 'You are not admin' });
+    }
   } catch (err) {
     next(err);
   }

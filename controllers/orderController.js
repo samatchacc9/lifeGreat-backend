@@ -91,6 +91,15 @@ exports.createOrder = async (req, res, next) => {
     // bulkCreat เป็นฟังก์ชัน loop ก้อน
     const orderItems = await OrderItem.bulkCreate(newOi);
     //respond list ออกไป
+    const newStock = newOi.map((item) => ({ qty: item.qty, productId: item.productId }));
+
+    const updateStock = newStock.map(async (item) => {
+      const product = await Product.findOne({ where: { id: item.productId } });
+      product.productamount = product.productamount - item.qty;
+      await product.save();
+    });
+    await Promise.all(updateStock);
+    console.log(newStock);
     res.status(201).json({ order });
   } catch (err) {
     next(err);

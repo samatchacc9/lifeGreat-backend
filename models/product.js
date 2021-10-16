@@ -31,6 +31,7 @@ module.exports = (sequelize, DataTypes) => {
 
     {
       underscored: true, // map ชื่อ colunm ในรูปแบบ uderScore
+      paranoid: true,
     },
   );
 
