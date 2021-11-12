@@ -155,7 +155,7 @@ exports.login = async (req, res, next) => {
 
 exports.checkadmin = async (req, res, next) => {
   try {
-    if (req.user === 'ADMIN') {
+    if (req.user.role === 'ADMIN') {
       next();
     } else {
       res.status(400).send({ message: 'You are not admin' });

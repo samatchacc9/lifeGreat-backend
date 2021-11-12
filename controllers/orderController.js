@@ -58,6 +58,9 @@ exports.getOrderById = async (req, res, next) => {
 
 //==================== createOrder
 exports.createOrder = async (req, res, next) => {
+  console.log('*************');
+  console.log(req.body);
+
   try {
     // 1. รับ req ที่ส่งเข้ามาทาง  body
     // const order = req.body;
@@ -68,12 +71,15 @@ exports.createOrder = async (req, res, next) => {
     // console.log(JSON.parse(cartitems));
 
     const result = await uploadPromise(req.file.path);
+
     fs.unlinkSync(req.file.path);
+
     //create order
     const order = await Order.create({
       orderdate,
       paymentstatus,
       picurl: result.secure_url,
+
       bankname,
       bankno,
       userId: req.user.id,
